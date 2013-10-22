@@ -258,7 +258,7 @@ for (i = 0; i < NUM_VOICES; i = i + 1) begin : register_flattening
 
 	assign nco_mixmode[3*(i+1)-1:3*i] = voice_ctrl[i][5:3];
 
-	assign envelope_gate[i] = voice_ctrl[NOTE_ON];
+	assign envelope_gate[i] = voice_ctrl[i][NOTE_ON];
 	assign envelope_attack[8*(i+1)-1:8*i] = voice_adsr[i][31:24];
 	assign envelope_decay[8*(i+1)-1:8*i] = voice_adsr[i][23:16];
 	assign envelope_sustain[8*(i+1)-1:8*i] = voice_adsr[i][15:8];
