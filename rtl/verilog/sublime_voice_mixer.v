@@ -44,10 +44,10 @@ reg		last_voice;
 reg [31:0]	mix;
 
 wire [31:0]	mul_op1;
-wire [7:0]	mul_op2;
+wire [8:0]	mul_op2;
 wire [31:0]	mul_op1_unsigned;
-wire [7:0]	mul_op2_unsigned;
-reg [39:0]	mul_res;
+wire [8:0]	mul_op2_unsigned;
+reg [40:0]	mul_res;
 reg		mul_res_neg;
 reg		mul_valid;
 wire [31:0]	scaled_voice;
@@ -58,7 +58,7 @@ always @(posedge clk)
 always @(posedge clk)
 	mul_valid <= active_voice_changed;
 
-assign scaled_voice = mul_res_neg ? ~mul_res[39:8] + 1 : mul_res[39:8];
+assign scaled_voice = mul_res_neg ? ~mul_res[39:8] + 32'd1 : mul_res[39:8];
 
 always @(posedge clk)
 	if (rst) begin
@@ -72,13 +72,13 @@ always @(posedge clk)
 	end
 
 assign mul_op1 = active_voice_data;
-assign mul_op2 = active_voice_velocity;
+assign mul_op2 = {1'b0, active_voice_velocity};
 
-assign mul_op1_unsigned = mul_op1[31] ? ~mul_op1 + 1 : mul_op1;
-assign mul_op2_unsigned = mul_op2[7] ? ~mul_op2 + 1 : mul_op2;
+assign mul_op1_unsigned = mul_op1[31] ? ~mul_op1 + 32'd1 : mul_op1;
+assign mul_op2_unsigned = mul_op2[8] ? ~mul_op2 + 9'd1 : mul_op2;
 
 always @(posedge clk) begin
-	mul_res_neg <= mul_op1[31] ^ mul_op2[7];
+	mul_res_neg <= mul_op1[31] ^ mul_op2[8];
 	mul_res <= mul_op1_unsigned * mul_op2_unsigned;
 end
 
