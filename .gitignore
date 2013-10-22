@@ -1,1 +1,5 @@
 *~
+*.o
+sublime
+sublime.bin
+sublime.dis
