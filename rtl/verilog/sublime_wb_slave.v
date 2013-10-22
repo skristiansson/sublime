@@ -188,7 +188,7 @@ always @(posedge clk)
 
 // Voice registers
 wire voice_ce = wb_adr_i[WB_AW-1:11] == 0;
-wire [3:0] voice_idx = wb_adr_i[10:4];
+wire [$clog2(NUM_VOICES)-1:0] voice_idx = wb_adr_i[10:4];
 
 reg [31:0] voice_osc0_freq[NUM_VOICES-1:0];
 reg [31:0] voice_osc1_freq[NUM_VOICES-1:0];
