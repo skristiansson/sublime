@@ -1,0 +1,38 @@
+# Commands
+CC = or1k-elf-gcc
+CPP = or1k-elf-g++
+OBJCOPY = or1k-elf-objcopy
+OBJDUMP = or1k-elf-objdump
+REMOVE = rm -rf
+# Compiler flags
+CFLAGS = -c -Wall -std=c99 -o2 -I./ -Idrivers/
+# Linker flags
+LDFLAGS = -mnewlib
+
+# Sources
+TARGET = main.c
+SRC = $(TARGET)
+SRC+= board_conf.c
+SRC+= sublime.c
+SRC+= drivers/ssm2603.c
+SRC+= drivers/opencores_i2c.c
+
+# Output filename
+OUT = sublime
+
+# Object defines
+COBJ = $(SRC:.c=.o)
+
+all: $(SRC) $(OUT) $(OUT).bin
+
+$(OUT).bin: $(OUT)
+	$(OBJCOPY) -O binary $< $@
+
+$(OUT): $(COBJ)
+	$(CC) $(LDFLAGS) $(COBJ) -o $@
+
+$(COBJ) : %.o : %.c
+	$(CC) $(CFLAGS) $< -o $@
+
+clean:
+	$(REMOVE) $(COBJ) $(OUT) $(OUT).bin
