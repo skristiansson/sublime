@@ -82,6 +82,8 @@ wire [$clog2(WAVETABLE_SIZE)-1:0] 	wavetable1_read_addr;
 wire [31:0]				wavetable0_read_data;
 wire [31:0]				wavetable1_read_data;
 
+wire [2:0]				mixmode[NUM_VOICES-1:0];
+
 always @(*) begin
 	next_voice = active_voice;
 	if (active_voice_done) begin
@@ -108,19 +110,23 @@ always @(posedge clk)
 
 
 // Mix output from the two wavetables according to the mixmode
+wire [31:0] osc0_output = nco0_enable[active_voice] ? wavetable0_read_data : 0;
+wire [31:0] osc1_output = nco1_enable[active_voice] ? wavetable1_read_data : 0;
+
 always @(*) begin
-	case(nco_mixmode[active_voice])
+	case(mixmode[active_voice])
 	3'h0:
-		active_voice_data = (wavetable0_read_data +
-				     wavetable1_read_data)/2;
+		active_voice_data = osc0_output + osc1_output;
 	3'h1:
-		active_voice_data = wavetable0_read_data - wavetable1_read_data;
+		active_voice_data = osc0_output - osc1_output;
 	3'h2:
-		active_voice_data = wavetable0_read_data | wavetable1_read_data;
+		active_voice_data = osc0_output | osc1_output;
 	3'h3:
-		active_voice_data = wavetable0_read_data ^ wavetable1_read_data;
+		active_voice_data = osc0_output ^ osc1_output;
 	3'h4:
-		active_voice_data = wavetable0_read_data & wavetable1_read_data;
+		active_voice_data = osc0_output & osc1_output;
+	default:
+		active_voice_data = 0;
 	endcase
 end
 
@@ -138,6 +144,8 @@ wire [$clog2(WAVETABLE_SIZE)-8:1] OFFSET_LO_PAD = 0;
 
 generate
 for (i = 0; i < NUM_VOICES; i=i+1) begin : nco_gen
+	assign mixmode[i] = nco_mixmode[3*(i+1)-1:3*i];
+
 	sublime_nco nco0 (
 		.clk		(clk),
 		.rst		(rst),
