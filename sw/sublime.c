@@ -8,8 +8,8 @@
 static int32_t* wavetable0;
 static int32_t* wavetable1;
 
-static uint32_t note_table[128];
-static uint32_t cent_table[100];
+static uint32_t note_table[129];
+static uint32_t cent_table[101];
 
 struct voice {
 	uint8_t note;
@@ -66,7 +66,7 @@ static void gen_square(int32_t *dest)
 
 static void gen_note_table(void)
 {
-	double notes[128];
+	double notes[129];
 	int i;
 
 	notes[69] = 440; /* #A4 */
@@ -76,7 +76,7 @@ static void gen_note_table(void)
 	for (i = 68; i >= 0; i--)
 		notes[i] = notes[i+12]/2;
 
-	for(i = 81; i < 128; i++)
+	for(i = 81; i <= 128; i++)
 		notes[i] = notes[i-12]*2;
 
 	/*
@@ -93,6 +93,10 @@ static void gen_note_table(void)
 
 static void gen_cent_table(void)
 {
+	int i;
+
+	for (i = 0; i <= 100; i++)
+		cent_table[i] = (1<<16) / pow(2, (float)i/1200) + 0.5f;
 }
 
 int32_t sublime_read_left(void)
@@ -134,6 +138,7 @@ void sublime_init(void)
 
 	/* Generate the lookup tables */
 	gen_note_table();
+	gen_cent_table();
 
 	/* Reset all voice registers */
 	for (i = 0; i < 4*NUM_VOICES; i++)
