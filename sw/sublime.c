@@ -17,14 +17,14 @@ struct voice {
 	uint8_t velocity;
 };
 
-void sublime_write_reg(uint32_t reg, uint32_t value)
+void sublime_write_reg(struct sublime *sublime, uint32_t reg, uint32_t value)
 {
-	*((uint32_t *)(SUBLIME_BASE + reg)) = value;
+	*((uint32_t *)(sublime->base + reg)) = value;
 }
 
-uint32_t sublime_read_reg(uint32_t reg)
+uint32_t sublime_read_reg(struct sublime *sublime, uint32_t reg)
 {
-	return *((uint32_t *)(SUBLIME_BASE + reg));
+	return *((uint32_t *)(sublime->base + reg));
 }
 
 static void gen_triangle(int32_t *dest)
@@ -133,7 +133,8 @@ uint32_t sublime_get_freq(int8_t note, int32_t cents)
 	return (uint32_t) freq_val;
 }
 
-void sublime_set_note(int voice, int osc, uint8_t note, int32_t cents)
+void sublime_set_note(struct sublime *sublime, int voice, int osc,
+		      int8_t note, int32_t cents)
 {
 	uint32_t freq_val = sublime_get_freq(note, cents);
 
@@ -144,7 +145,7 @@ void sublime_set_note(int voice, int osc, uint8_t note, int32_t cents)
 	}
 
 	osc = (osc == 0) ? VOICE_OSC0_FREQ : VOICE_OSC1_FREQ;
-	sublime_write_reg(VOICE_REG(voice, osc), freq_val);
+	sublime_write_reg(sublime, VOICE_REG(voice, osc), freq_val);
 }
 
 void sublime_init(struct sublime *sublime, int num_voices)
@@ -165,7 +166,7 @@ void sublime_init(struct sublime *sublime, int num_voices)
 
 	/* Reset all voice registers */
 	for (i = 0; i < 4*num_voices; i++)
-		sublime_write_reg(SUBLIME_BASE + i*4, 0);
+		sublime_write_reg(sublime, SUBLIME_BASE + i*4, 0);
 
 	/* Set defaults */
 	wavetable0 = (int32_t *)WAVETABLE0_BASE;
@@ -173,15 +174,10 @@ void sublime_init(struct sublime *sublime, int num_voices)
 	gen_saw(wavetable0);
 	gen_square(wavetable1);
 
-	/* Enable oscs and set velocity */
-	sublime_write_reg(VOICE_REG(0, VOICE_CTRL), 0x3f03);
-	sublime_write_reg(VOICE_REG(1, VOICE_CTRL), 0x3f03);
-	sublime_write_reg(VOICE_REG(2, VOICE_CTRL), 0x3f03);
+	/* Assert sync to all voices */
+	sublime_write_reg(sublime, MAIN_CTRL, 1);
 
-	// Assert sync to all voices
-	sublime_write_reg(MAIN_CTRL, 1);
-
-	// Deassert sync to all voices
-	sublime_write_reg(MAIN_CTRL, 0);
+	/* Deassert sync to all voices */
+	sublime_write_reg(sublime, MAIN_CTRL, 0);
 
 }
