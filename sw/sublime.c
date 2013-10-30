@@ -104,9 +104,13 @@ int32_t sublime_read_left(void)
 	return *((int32_t *)(SUBLIME_BASE + LEFT_SAMPLE));
 }
 
-void sublime_set_note(int voice, int osc, uint8_t note, int32_t cents)
+/*
+ * Converts note and cents values into 'freq' value suitable for sublime's
+ * freq registers (i.e. the phase accumulator increamental value)
+ */
+uint32_t sublime_get_freq(int8_t note, int32_t cents)
 {
-	uint32_t freq_val;
+	uint64_t freq_val;
 
 	/*
 	 * adjust cents to be between 0 and 99,
@@ -123,10 +127,21 @@ void sublime_set_note(int voice, int osc, uint8_t note, int32_t cents)
 	if (note < 0)
 		note = 0;
 
-	freq_val = note_table[note];
+	freq_val = ((uint64_t)note_table[note+1] *
+		    (uint64_t)cent_table[100-cents]) >> 16;
 
-	if (cents)
-		freq_val *= cent_table[cents];
+	return (uint32_t) freq_val;
+}
+
+void sublime_set_note(int voice, int osc, uint8_t note, int32_t cents)
+{
+	uint32_t freq_val = sublime_get_freq(note, cents);
+
+	if (sublime->voices[voice].active) {
+		printf("SJK DEBUG: set_note: note = %i, cents = %i, "
+		       "freq_val = %x, velocity = %x\r\n",
+		       note, cents, freq_val, sublime->voices[voice].velocity);
+	}
 
 	osc = (osc == 0) ? VOICE_OSC0_FREQ : VOICE_OSC1_FREQ;
 	sublime_write_reg(VOICE_REG(voice, osc), freq_val);
