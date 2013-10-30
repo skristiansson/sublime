@@ -27,16 +27,16 @@ static void gen_triangle(int32_t *dest)
 	int32_t i;
 
 	for (i = 0; i < WAVETABLE_SIZE/4; i++)
-		*dest++ = i*(INT_MAX/(WAVETABLE_SIZE/4));
+		*dest++ = i*(INT_MAX/WAVETABLE_SIZE);
 
 	for (i = 0; i < WAVETABLE_SIZE/4; i++)
-		*dest++ = INT_MAX - i*(INT_MAX/(WAVETABLE_SIZE/4));
+		*dest++ = INT_MAX/4 - i*(INT_MAX/WAVETABLE_SIZE);
 
 	for (i = 0; i < WAVETABLE_SIZE/4; i++)
-		*dest++ = -i*(INT_MAX/(WAVETABLE_SIZE/4));
+		*dest++ = -i*(INT_MAX/WAVETABLE_SIZE);
 
 	for (i = 0; i < WAVETABLE_SIZE/4; i++)
-		*dest++ = i*(INT_MAX/(WAVETABLE_SIZE/4)) - INT_MAX;
+		*dest++ = i*(INT_MAX/WAVETABLE_SIZE) - INT_MAX;
 }
 
 static void gen_saw(int32_t *dest)
@@ -44,7 +44,7 @@ static void gen_saw(int32_t *dest)
 	int32_t i;
 
 	for (i = 0; i < WAVETABLE_SIZE; i++)
-		*dest++ = INT_MAX - i*(INT_MAX/(WAVETABLE_SIZE/2));
+		*dest++ = INT_MAX/4 - i*(INT_MAX/(WAVETABLE_SIZE*2));
 
 }
 
@@ -53,10 +53,10 @@ static void gen_square(int32_t *dest)
 	int32_t i;
 
 	for (i = 0; i < WAVETABLE_SIZE/2; i++)
-		*dest++ = INT_MAX-1;
+		*dest++ = INT_MAX/4;
 
 	for (i = 0; i < WAVETABLE_SIZE/2; i++)
-		*dest++ = -(INT_MAX-1);
+		*dest++ = -(INT_MAX/4);
 }
 
 static void gen_note_table(void)
@@ -230,6 +230,7 @@ void sublime_init(struct sublime *sublime, int num_voices)
 	for (i = 0; i < num_voices; i++) {
 		sublime->voices[i].active = 0;
 		sublime->voices[i].osc[0].enable = 1;
+		sublime->voices[i].osc[1].enable = 1;
 	}
 
 	/* Reset all voice registers */

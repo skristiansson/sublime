@@ -5,7 +5,7 @@ OBJCOPY = or1k-elf-objcopy
 OBJDUMP = or1k-elf-objdump
 REMOVE = rm -rf
 # Compiler flags
-CFLAGS = -c -Wall -std=c99 -o2 -I./ -Idrivers/
+CFLAGS = -c -Wall -std=c99 -O2 -I./ -Idrivers/ -Isynth/
 # Linker flags
 LDFLAGS = -mnewlib -lm
 
@@ -13,8 +13,8 @@ LDFLAGS = -mnewlib -lm
 TARGET = main.c
 SRC = $(TARGET)
 SRC+= board_conf.c
-SRC+= sublime.c
 SRC+= irq.c
+SRC+= synth/sublime.c
 SRC+= drivers/ssm2603.c
 SRC+= drivers/opencores_i2c.c
 SRC+= drivers/mmiomidi.c
