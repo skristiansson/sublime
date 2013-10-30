@@ -19,7 +19,6 @@
 #define WAVETABLE0_BASE		(SUBLIME_BASE + 0x10000)
 #define WAVETABLE1_BASE		(SUBLIME_BASE + 0x20000)
 
-extern void sublime_init(void);
 extern void sublime_set_note(int voice, int osc, uint8_t note, int32_t cents);
 struct osc {
 	int enable;
@@ -46,4 +45,5 @@ struct sublime {
 	struct voice voices[MAX_NUM_VOICES];
 };
 
+extern void sublime_init(struct sublime *sublime, int num_voices);
 #endif

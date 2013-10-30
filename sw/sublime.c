@@ -132,7 +132,7 @@ void sublime_set_note(int voice, int osc, uint8_t note, int32_t cents)
 	sublime_write_reg(VOICE_REG(voice, osc), freq_val);
 }
 
-void sublime_init(void)
+void sublime_init(struct sublime *sublime, int num_voices)
 {
 	int i;
 
@@ -140,8 +140,16 @@ void sublime_init(void)
 	gen_note_table();
 	gen_cent_table();
 
+	sublime->base = SUBLIME_BASE; /* SJK MOVE */
+	sublime->num_voices = num_voices;
+
+	for (i = 0; i < num_voices; i++) {
+		sublime->voices[i].active = 0;
+		sublime->voices[i].osc[0].enable = 1;
+	}
+
 	/* Reset all voice registers */
-	for (i = 0; i < 4*NUM_VOICES; i++)
+	for (i = 0; i < 4*num_voices; i++)
 		sublime_write_reg(SUBLIME_BASE + i*4, 0);
 
 	/* Set defaults */

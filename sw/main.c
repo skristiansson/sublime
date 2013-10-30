@@ -3,6 +3,9 @@
 #include <i2c.h>
 #include <codec.h>
 #include <delay.h>
+#include <sublime.h>
+static struct sublime sublime_synth;
+
 static void init(void)
 {
 #ifdef I2C_DRIVER
@@ -17,7 +20,7 @@ static void init(void)
 #endif
 
 	printf("Initializing sublime..");
-	sublime_init();
+	sublime_init(&sublime_synth, 8);
 	printf("done\r\n");
 
 }
