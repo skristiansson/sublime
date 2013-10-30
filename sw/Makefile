@@ -14,6 +14,7 @@ TARGET = main.c
 SRC = $(TARGET)
 SRC+= board_conf.c
 SRC+= sublime.c
+SRC+= irq.c
 SRC+= drivers/ssm2603.c
 SRC+= drivers/opencores_i2c.c
 
