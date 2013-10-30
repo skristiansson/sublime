@@ -1,7 +1,6 @@
 #ifndef _SUBLIME_H_
 #define _SUBLIME_H_
 #define SUBLIME_BASE		0x9a000000
-#define NUM_VOICES		8
 #define WAVETABLE_SIZE		8192
 #define MAX_NUM_VOICES		127
 
