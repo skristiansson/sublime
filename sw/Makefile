@@ -7,7 +7,7 @@ REMOVE = rm -rf
 # Compiler flags
 CFLAGS = -c -Wall -std=c99 -o2 -I./ -Idrivers/
 # Linker flags
-LDFLAGS = -mnewlib
+LDFLAGS = -mnewlib -lm
 
 # Sources
 TARGET = main.c
@@ -32,7 +32,7 @@ $(OUT).bin: $(OUT)
 	$(OBJCOPY) -O binary $< $@
 
 $(OUT): $(COBJ)
-	$(CC) $(LDFLAGS) $(COBJ) -o $@
+	$(CC) $(COBJ) $(LDFLAGS) -o $@
 
 $(COBJ) : %.o : %.c
 	$(CC) $(CFLAGS) $< -o $@
