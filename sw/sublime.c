@@ -11,12 +11,6 @@ static int32_t* wavetable1;
 static uint32_t note_table[129];
 static uint32_t cent_table[101];
 
-struct voice {
-	uint8_t note;
-	uint8_t cents;
-	uint8_t velocity;
-};
-
 void sublime_write_reg(struct sublime *sublime, uint32_t reg, uint32_t value)
 {
 	*((uint32_t *)(sublime->base + reg)) = value;
