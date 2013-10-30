@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <math.h>
 #include <config.h>
+#include <midi.h>
 #include <sublime.h>
 
 static int32_t* wavetable0;
@@ -163,6 +164,39 @@ int sublime_get_voice_by_note(struct sublime *sublime, uint8_t note)
 	return -1;
 }
 
+void sublime_note_on_cb(struct midi_note *midi_note)
+{
+	struct sublime *sublime = midi_note->private_data;
+	int voice;
+
+	printf("SJK DEBUG: sublime_note_on_cb: %x\r\n",
+		sublime);
+
+	voice = sublime_get_free_voice(sublime);
+	if (voice < 0)
+		return;
+
+	sublime->voices[voice].note = midi_note->note;
+	sublime->voices[voice].velocity = midi_note->velocity;
+	sublime->voices[voice].active = 1;
+}
+
+void sublime_note_off_cb(struct midi_note *midi_note)
+{
+	struct sublime *sublime = midi_note->private_data;
+	int voice;
+
+	printf("SJK DEBUG: sublime_note_off_cb: %x\r\n",
+		sublime);
+
+	voice = sublime_get_voice_by_note(sublime, midi_note->note);
+	if (voice < 0)
+		return;
+
+	sublime->voices[voice].note = 0;
+	sublime->voices[voice].velocity = 0;
+	sublime->voices[voice].active = 0;
+}
 void sublime_init(struct sublime *sublime, int num_voices)
 {
 	int i;
@@ -195,4 +229,6 @@ void sublime_init(struct sublime *sublime, int num_voices)
 	/* Deassert sync to all voices */
 	sublime_write_reg(sublime, MAIN_CTRL, 0);
 
+	midi_register_note_on_cb(sublime, 0xff, sublime_note_on_cb);
+	midi_register_note_off_cb(sublime, 0xff, sublime_note_off_cb);
 }
