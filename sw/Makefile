@@ -17,6 +17,8 @@ SRC+= sublime.c
 SRC+= irq.c
 SRC+= drivers/ssm2603.c
 SRC+= drivers/opencores_i2c.c
+SRC+= drivers/mmiomidi.c
+SRC+= drivers/midi.c
 
 # Output filename
 OUT = sublime
