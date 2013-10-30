@@ -3,6 +3,7 @@
 #define SUBLIME_BASE		0x9a000000
 #define NUM_VOICES		8
 #define WAVETABLE_SIZE		8192
+#define MAX_NUM_VOICES		127
 
 #define VOICE_OSC0_FREQ		0x0
 #define VOICE_OSC1_FREQ		0x4
@@ -20,5 +21,29 @@
 
 extern void sublime_init(void);
 extern void sublime_set_note(int voice, int osc, uint8_t note, int32_t cents);
+struct osc {
+	int enable;
+	int8_t cents;
+};
+
+struct voice {
+	int gate;
+	int active;
+	uint8_t attack;
+	uint8_t decay;
+	uint8_t sustain;
+	uint8_t release;
+	uint8_t velocity;
+	uint8_t note;
+	struct osc osc[2];
+};
+
+struct sublime {
+	void *base;
+	int num_voices;
+	int32_t *wavetable0;
+	int32_t *wavetable1;
+	struct voice voices[MAX_NUM_VOICES];
+};
 
 #endif
