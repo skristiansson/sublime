@@ -142,6 +142,27 @@ void sublime_set_note(struct sublime *sublime, int voice, int osc,
 	sublime_write_reg(sublime, VOICE_REG(voice, osc), freq_val);
 }
 
+int sublime_get_free_voice(struct sublime *sublime)
+{
+	for (int i = 0; i < sublime->num_voices; i++) {
+		if (!sublime->voices[i].active)
+			return i;
+	}
+
+	return -1;
+}
+
+int sublime_get_voice_by_note(struct sublime *sublime, uint8_t note)
+{
+	for (int i = 0; i < sublime->num_voices; i++) {
+		if (sublime->voices[i].active &&
+		    sublime->voices[i].note == note)
+			return i;
+	}
+
+	return -1;
+}
+
 void sublime_init(struct sublime *sublime, int num_voices)
 {
 	int i;
