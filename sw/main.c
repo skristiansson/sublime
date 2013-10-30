@@ -37,19 +37,8 @@ static void init(void)
 
 int main(void)
 {
-	volatile i;
-	int32_t left_sample;
-	uint8_t j = 0;
 	init();
 
-
 	for(;;) {
-		delay_ms(10);
-		sublime_set_note(0, 0, j++%128, 0);
-		left_sample = sublime_read_left();
-		printf("left_sample = %i\t0x%08x\r\n",
-		       left_sample, left_sample);
-
-
 	}
 }
