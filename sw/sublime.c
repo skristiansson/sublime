@@ -197,6 +197,18 @@ void sublime_note_off_cb(struct midi_note *midi_note)
 	sublime->voices[voice].velocity = 0;
 	sublime->voices[voice].active = 0;
 }
+
+void sublime_write_voice(struct sublime *sublime, int voice_idx)
+{
+	struct voice *voice = &sublime->voices[voice_idx];
+
+	sublime_write_reg(sublime, VOICE_REG(voice_idx, VOICE_CTRL),
+			  (uint16_t)voice->velocity << 8 |
+			  voice->osc[1].enable << 1 | voice->osc[0].enable);
+	sublime_set_note(sublime, voice_idx, 0, voice->note, 0);
+	sublime_set_note(sublime, voice_idx, 1, voice->note, 0);
+}
+
 void sublime_init(struct sublime *sublime, int num_voices)
 {
 	int i;
