@@ -240,7 +240,6 @@ always @(posedge clk)
 
 assign sync_all = main_control[0];
 
-
 // Flatten registers and map them to the out ports
 // It will be a glorious day when multidimensional arrays in port
 // declarations are supported...
