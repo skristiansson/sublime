@@ -44,4 +44,6 @@ struct sublime {
 };
 
 extern void sublime_init(struct sublime *sublime, int num_voices);
+extern void sublime_task(struct sublime *sublime);
+
 #endif

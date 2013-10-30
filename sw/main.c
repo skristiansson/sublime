@@ -40,5 +40,6 @@ int main(void)
 	init();
 
 	for(;;) {
+		sublime_task(&sublime_synth);
 	}
 }

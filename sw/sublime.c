@@ -209,6 +209,13 @@ void sublime_write_voice(struct sublime *sublime, int voice_idx)
 	sublime_set_note(sublime, voice_idx, 1, voice->note, 0);
 }
 
+void sublime_task(struct sublime *sublime)
+{
+	for (int i = 0; i < sublime->num_voices; i++) {
+		sublime_write_voice(sublime, i);
+	}
+}
+
 void sublime_init(struct sublime *sublime, int num_voices)
 {
 	int i;
