@@ -11,4 +11,5 @@
 /* Driver config */
 #define I2C_DRIVER		oci2c
 #define CODEC_DRIVER		ssm2603
+#define MIDI_DRIVER		mmiomidi
 #endif
