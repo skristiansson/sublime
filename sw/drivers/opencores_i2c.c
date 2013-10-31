@@ -48,17 +48,9 @@ void oci2c_init(void)
 	/* TODO: make this configurable... */
 	uint16_t prescaler = BOARD_CLK_FREQ/(5*100e3) - 1;
 
-	printf("SJK DEBUG: prescaler = %x\r\n", prescaler);
-
 	/* Set prescaler */
 	oci2c_write_reg(OCI2C_PRERHI, prescaler >> 8);
 	oci2c_write_reg(OCI2C_PRERLO, prescaler & 0xff);
-
-/* SJK DEBUG */
-	prescaler = oci2c_read_reg(OCI2C_PRERHI);
-	printf("SJK DEBUG: OCI2C_PRERHI = %x\r\n", prescaler);
-	prescaler = oci2c_read_reg(OCI2C_PRERLO);
-	printf("SJK DEBUG: OCI2C_PRERLO = %x\r\n", prescaler);
 
 	/* Enable core */
 	oci2c_write_reg(OCI2C_CTR, OCI2C_CTR_EN);

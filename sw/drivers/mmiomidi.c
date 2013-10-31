@@ -16,7 +16,6 @@ static uint32_t mmiomidi_read_reg(uint32_t reg)
 
 static void mmiomidi_isr(void *private_data)
 {
-	printf("Got midi interrupt!\r\n");
 	while (!(mmiomidi_read_reg(MMIOMIDI_STATUS_REG) &
 		 MMIOMIDI_STATUS_FIFO_EMPTY)) {
 		midi_receive_byte(mmiomidi_read_reg(MMIOMIDI_IN_REG) & 0xff);

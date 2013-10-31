@@ -134,11 +134,6 @@ void ssm2603_init(void)
 	/* Reset all registers to default */
 	ssm2603_write_reg(SSM2603_SW_RESET_REG, 0);
 
-/* SJK DEBUG */
-	reg = ssm2603_read_reg(SSM2603_LEFT_DAC_VOL_REG);
-	printf("SJK DEBUG: SSM2603_LEFT_DAC_VOL_REG = %x\r\n", reg);
-/* SJK DEBUG END*/
-
 	ssm2603_write_reg(SSM2603_POWER_MANAGEMENT_REG, SSM2603_OUT);
 
 	/* Select DAC to the analog output path */

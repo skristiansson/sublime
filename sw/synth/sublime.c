@@ -79,11 +79,8 @@ static void gen_note_table(void)
 	 * to write into the freq reg is:
 	 * 2^32/(BOARD_CLK_FREQ/note_freq)
 	 */
-	for (i = 0; i <= 128; i++) {
+	for (i = 0; i <= 128; i++)
 		note_table[i] = ((1ull<<32)*notes[i])/BOARD_CLK_FREQ + 0.5f;
-		printf("SJK DEBUG: note_table[%i] = %x, notes[%i] = %f\r\n",
-		       i, note_table[i], i, notes[i]);
-	}
 }
 
 static void gen_cent_table(void)
