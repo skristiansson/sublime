@@ -231,8 +231,8 @@ void sublime_init(struct sublime *sublime, int num_voices)
 	}
 
 	/* Reset all voice registers */
-	for (i = 0; i < 4*num_voices; i++)
-		sublime_write_reg(sublime, SUBLIME_BASE + i*4, 0);
+	for (i = 0; i < 4*sublime->num_voices; i++)
+		sublime_write_reg(sublime, i*4, 0);
 
 	/* Set defaults */
 	wavetable0 = (int32_t *)WAVETABLE0_BASE;
