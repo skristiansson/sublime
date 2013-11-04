@@ -144,7 +144,7 @@ int sublime_get_free_voice(struct sublime *sublime)
 int sublime_get_voice_by_note(struct sublime *sublime, uint8_t note)
 {
 	for (int i = 0; i < sublime->num_voices; i++) {
-		if (sublime->voices[i].active &&
+		if (sublime->voices[i].amp_env.gate &&
 		    sublime->voices[i].note == note)
 			return i;
 	}
@@ -164,6 +164,7 @@ void sublime_note_on_cb(struct midi_note *midi_note)
 	sublime->voices[voice].note = midi_note->note;
 	sublime->voices[voice].velocity = midi_note->velocity;
 	sublime->voices[voice].active = 1;
+	envelope_gate_on(&sublime->voices[voice].amp_env);
 }
 
 void sublime_note_off_cb(struct midi_note *midi_note)
@@ -175,18 +176,24 @@ void sublime_note_off_cb(struct midi_note *midi_note)
 	if (voice < 0)
 		return;
 
-	sublime->voices[voice].note = 0;
-	sublime->voices[voice].velocity = 0;
-	sublime->voices[voice].active = 0;
+	if (midi_note->velocity)
+		sublime->voices[voice].velocity = midi_note->velocity;
+	envelope_gate_off(&sublime->voices[voice].amp_env);
 }
 
 void sublime_write_voice(struct sublime *sublime, int voice_idx)
 {
+	uint16_t velocity;
 	struct voice *voice = &sublime->voices[voice_idx];
 
+	if (!envelope_isactive(&voice->amp_env))
+		voice->active = 0;
+
+	velocity = (voice->velocity * voice->amp_env.output)/256;
+
 	sublime_write_reg(sublime, VOICE_REG(voice_idx, VOICE_CTRL),
-			  (uint16_t)voice->velocity << 8 |
-			  voice->osc[1].enable << 1 | voice->osc[0].enable);
+			  velocity << 8 | voice->osc[1].enable << 1 |
+			  voice->osc[0].enable);
 	sublime_set_note(sublime, voice_idx, 0, voice->note, 0);
 	sublime_set_note(sublime, voice_idx, 1, voice->note, 0);
 }
@@ -214,6 +221,11 @@ void sublime_init(struct sublime *sublime, void *base)
 		sublime->voices[i].active = 0;
 		sublime->voices[i].osc[0].enable = 1;
 		sublime->voices[i].osc[1].enable = 1;
+		envelope_init(&sublime->voices[i].amp_env);
+		sublime->voices[i].amp_env.attack = 50000;
+		sublime->voices[i].amp_env.decay = 100000;
+		sublime->voices[i].amp_env.sustain = 0x7f;
+		sublime->voices[i].amp_env.release = 1000000;
 	}
 
 	/* Reset all voice registers */

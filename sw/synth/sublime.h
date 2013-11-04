@@ -1,5 +1,7 @@
 #ifndef _SUBLIME_H_
 #define _SUBLIME_H_
+#include <envelope.h>
+
 #define WAVETABLE_SIZE		8192
 #define MAX_NUM_VOICES		128
 
@@ -24,14 +26,10 @@ struct osc {
 };
 
 struct voice {
-	int gate;
 	int active;
-	uint8_t attack;
-	uint8_t decay;
-	uint8_t sustain;
-	uint8_t release;
 	uint8_t velocity;
 	uint8_t note;
+	struct envelope amp_env;
 	struct osc osc[2];
 };
 
