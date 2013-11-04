@@ -15,6 +15,7 @@ SRC = $(TARGET)
 SRC+= board_conf.c
 SRC+= irq.c
 SRC+= timer.c
+SRC+= synth/envelope.c
 SRC+= synth/sublime.c
 SRC+= drivers/ssm2603.c
 SRC+= drivers/opencores_i2c.c
