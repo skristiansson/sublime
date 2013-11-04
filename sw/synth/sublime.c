@@ -127,12 +127,6 @@ void sublime_set_note(struct sublime *sublime, int voice, int osc,
 {
 	uint32_t freq_val = sublime_get_freq(note, cents);
 
-	if (sublime->voices[voice].active) {
-		printf("SJK DEBUG: set_note: note = %i, cents = %i, "
-		       "freq_val = %x, velocity = %x\r\n",
-		       note, cents, freq_val, sublime->voices[voice].velocity);
-	}
-
 	osc = (osc == 0) ? VOICE_OSC0_FREQ : VOICE_OSC1_FREQ;
 	sublime_write_reg(sublime, VOICE_REG(voice, osc), freq_val);
 }
@@ -163,9 +157,6 @@ void sublime_note_on_cb(struct midi_note *midi_note)
 	struct sublime *sublime = midi_note->private_data;
 	int voice;
 
-	printf("SJK DEBUG: sublime_note_on_cb: %x\r\n",
-		sublime);
-
 	voice = sublime_get_free_voice(sublime);
 	if (voice < 0)
 		return;
@@ -179,9 +170,6 @@ void sublime_note_off_cb(struct midi_note *midi_note)
 {
 	struct sublime *sublime = midi_note->private_data;
 	int voice;
-
-	printf("SJK DEBUG: sublime_note_off_cb: %x\r\n",
-		sublime);
 
 	voice = sublime_get_voice_by_note(sublime, midi_note->note);
 	if (voice < 0)
