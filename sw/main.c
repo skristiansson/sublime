@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <irq.h>
+#include <timer.h>
 #include <i2c.h>
 #include <codec.h>
 #include <delay.h>
@@ -23,6 +24,10 @@ static void init(void)
 	codec_init();
 	printf("done\r\n");
 #endif
+
+	printf("Initializing tick timer..");
+	timer_init();
+	printf("done\r\n");
 
 	printf("Initializing MIDI..");
 	midi_init();
