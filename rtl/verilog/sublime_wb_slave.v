@@ -117,7 +117,9 @@ module sublime_wb_slave #(
 // +--------------+-------------------------+
 // | 0x00000808   | main control            |
 // +--------------+-------------------------+
-// | 0x0000080c - | reserved                |
+// | 0x0000080c   | configuration           |
+// +--------------+-------------------------+
+// | 0x00000810 - | reserved                |
 // | 0x0000fffc   |                         |
 // +--------------+-------------------------+
 // | 0x00010000 - | wavetable0              |
@@ -165,6 +167,13 @@ module sublime_wb_slave #(
 // +----------+----------+
 // | reserved | sync all |
 // +----------+----------+
+//
+// Configuration
+// +----------+----------------------+-------------+
+// |    31:11 |                 10:7 |         6:0 |
+// +----------+----------------------+-------------+
+// | reserved | log2(wavetable size) | voice count |
+// +----------+----------------------+-------------+
 
 localparam OSC0_SYNC	= 7;
 localparam OSC1_SYNC	= 6;
@@ -223,10 +232,6 @@ assign wavetable_write_data = wb_dat_i;
 wire left_ce = wb_adr_i[WB_AW-1:11] == 1 && wb_adr_i[10:2] == 0;
 wire right_ce = wb_adr_i[WB_AW-1:11] == 1 && wb_adr_i[10:2] == 1;
 
-assign wb_dat_o = left_ce ? left_sample :
-		  right_ce ? right_sample :
-		  0;
-
 // Main control
 reg [31:0] main_control;
 wire main_control_ce = wb_adr_i[WB_AW-1:11] == 1 && wb_adr_i[10:2] == 2;
@@ -239,6 +244,21 @@ always @(posedge clk)
 		main_control <= wb_dat_i;
 
 assign sync_all = main_control[0];
+
+// Configuration
+wire config_ce = wb_adr_i[WB_AW-1:11] == 1 && wb_adr_i[10:2] == 3;
+wire [31:0] configuration;
+
+assign configuration[31:11] = 0;
+assign configuration[10:7] = $clog2(WAVETABLE_SIZE);
+assign configuration[6:0] = NUM_VOICES;
+
+
+// Wishbone data output mux
+assign wb_dat_o = left_ce ? left_sample :
+		  right_ce ? right_sample :
+		  config_ce ? configuration :
+		  0;
 
 // Flatten registers and map them to the out ports
 // It will be a glorious day when multidimensional arrays in port
