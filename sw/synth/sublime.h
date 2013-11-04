@@ -1,6 +1,5 @@
 #ifndef _SUBLIME_H_
 #define _SUBLIME_H_
-#define SUBLIME_BASE		0x9a000000
 #define WAVETABLE_SIZE		8192
 #define MAX_NUM_VOICES		128
 
@@ -14,9 +13,10 @@
 #define LEFT_SAMPLE		0x800
 #define RIGHT_SAMPLE		0x804
 #define MAIN_CTRL		0x808
+#define SUBLIME_CONFIG		0x80c
 
-#define WAVETABLE0_BASE		(SUBLIME_BASE + 0x10000)
-#define WAVETABLE1_BASE		(SUBLIME_BASE + 0x20000)
+#define WAVETABLE0		0x10000
+#define WAVETABLE1		0x20000
 
 struct osc {
 	int enable;
@@ -43,7 +43,7 @@ struct sublime {
 	struct voice voices[MAX_NUM_VOICES];
 };
 
-extern void sublime_init(struct sublime *sublime, int num_voices);
+extern void sublime_init(struct sublime *sublime, void *base);
 extern void sublime_task(struct sublime *sublime);
 
 #endif

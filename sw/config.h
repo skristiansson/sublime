@@ -8,6 +8,8 @@
 #define BOARD_UART_BAUD		115200
 #define BOARD_UART_IRQ		2
 
+#define BOARD_SUBLIME_BASE	0x9a000000
+
 /* Driver config */
 #define I2C_DRIVER		oci2c
 #define CODEC_DRIVER		ssm2603

@@ -6,9 +6,6 @@
 #include <midi.h>
 #include <sublime.h>
 
-static int32_t* wavetable0;
-static int32_t* wavetable1;
-
 static uint32_t note_table[129];
 static uint32_t cent_table[101];
 
@@ -91,9 +88,9 @@ static void gen_cent_table(void)
 		cent_table[i] = (1<<16) / pow(2, (float)i/1200) + 0.5f;
 }
 
-int32_t sublime_read_left(void)
+int32_t sublime_read_left(struct sublime *sublime)
 {
-	return *((int32_t *)(SUBLIME_BASE + LEFT_SAMPLE));
+	return *((int32_t *)(sublime->base + LEFT_SAMPLE));
 }
 
 /*
@@ -213,7 +210,7 @@ void sublime_task(struct sublime *sublime)
 	}
 }
 
-void sublime_init(struct sublime *sublime, int num_voices)
+void sublime_init(struct sublime *sublime, void *base)
 {
 	int i;
 
@@ -221,10 +218,11 @@ void sublime_init(struct sublime *sublime, int num_voices)
 	gen_note_table();
 	gen_cent_table();
 
-	sublime->base = SUBLIME_BASE; /* SJK MOVE */
-	sublime->num_voices = num_voices;
+	sublime->base = base;
+	sublime->num_voices = sublime_read_reg(sublime, SUBLIME_CONFIG) & 0x7f;
+	printf("SJK DEBUG: sublime->num_voices = %d\r\n", sublime->num_voices);
 
-	for (i = 0; i < num_voices; i++) {
+	for (i = 0; i < sublime->num_voices; i++) {
 		sublime->voices[i].active = 0;
 		sublime->voices[i].osc[0].enable = 1;
 		sublime->voices[i].osc[1].enable = 1;
@@ -235,10 +233,10 @@ void sublime_init(struct sublime *sublime, int num_voices)
 		sublime_write_reg(sublime, i*4, 0);
 
 	/* Set defaults */
-	wavetable0 = (int32_t *)WAVETABLE0_BASE;
-	wavetable1 = (int32_t *)WAVETABLE1_BASE;
-	gen_saw(wavetable0);
-	gen_square(wavetable1);
+	sublime->wavetable0 = (int32_t *)(base + WAVETABLE0);
+	sublime->wavetable1 = (int32_t *)(base + WAVETABLE1);
+	gen_saw(sublime->wavetable0);
+	gen_square(sublime->wavetable1);
 
 	/* Assert sync to all voices */
 	sublime_write_reg(sublime, MAIN_CTRL, 1);
