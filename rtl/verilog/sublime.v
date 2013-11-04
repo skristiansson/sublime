@@ -72,12 +72,6 @@ wire 				 	wavetable1_we;
 wire [$clog2(WAVETABLE_SIZE)-1:0]	wavetable_write_addr;
 wire [31:0] 				wavetable_write_data;
 
-wire [NUM_VOICES-1:0]			envelope_gate;
-wire [NUM_VOICES*8-1:0]			envelope_attack;
-wire [NUM_VOICES*8-1:0]			envelope_decay;
-wire [NUM_VOICES*8-1:0]			envelope_sustain;
-wire [NUM_VOICES*8-1:0]			envelope_release;
-
 wire [NUM_VOICES*8-1:0]			velocity;
 wire [7:0] 				voice_velocity[NUM_VOICES-1:0];
 wire [31:0] 				active_voice_data;
@@ -153,11 +147,6 @@ sublime_wb_slave wb_slave0 (
 	.wavetable1_we			(wavetable1_we),
 	.wavetable_write_addr		(wavetable_write_addr),
 	.wavetable_write_data		(wavetable_write_data),
-	.envelope_gate			(envelope_gate),
-	.envelope_attack		(envelope_attack),
-	.envelope_decay			(envelope_decay),
-	.envelope_sustain		(envelope_sustain),
-	.envelope_release		(envelope_release),
 	.velocity			(velocity),
 	.nco_mixmode			(nco_mixmode),
 

@@ -56,12 +56,6 @@ module sublime_wb_slave #(
 	output [$clog2(WAVETABLE_SIZE)-1:0] wavetable_write_addr,
 	output [31:0] 			    wavetable_write_data,
 
-	output [NUM_VOICES-1:0] 	    envelope_gate,
-	output [NUM_VOICES*8-1:0] 	    envelope_attack,
-	output [NUM_VOICES*8-1:0] 	    envelope_decay,
-	output [NUM_VOICES*8-1:0] 	    envelope_sustain,
-	output [NUM_VOICES*8-1:0] 	    envelope_release,
-
 	output [NUM_VOICES*8-1:0] 	    velocity,
 
 	input [31:0] 			    left_sample,
@@ -91,7 +85,7 @@ module sublime_wb_slave #(
 // +--------------+-------------------------+
 // | 0x00000008   | voice0 control          |
 // +--------------+-------------------------+
-// | 0x0000000c   | voice0 envelope         |
+// | 0x0000000c   | reserved                |
 // +--------------+-------------------------+
 // | 0x00000010   | voice1 osc0 frequency   |
 // +--------------+-------------------------+
@@ -99,7 +93,7 @@ module sublime_wb_slave #(
 // +--------------+-------------------------+
 // | 0x00000018   | voice1 control          |
 // +--------------+-------------------------+
-// | 0x0000001c   | voice1 envelope         |
+// | 0x0000001c   | reserved                |
 // +--------------+-------------------------+
 // | ...          | ...                     |
 // +--------------+-------------------------+
@@ -109,7 +103,7 @@ module sublime_wb_slave #(
 // +--------------+-------------------------+
 // | 0x000007f8   | voice127 control        |
 // +--------------+-------------------------+
-// | 0x000007fc   | voice127 envelope       |
+// | 0x000007fc   | reserved                |
 // +--------------+-------------------------+
 // | 0x00000800   | left audio sample       |
 // +--------------+-------------------------+
@@ -154,13 +148,6 @@ module sublime_wb_slave #(
 // restart. The most useful use case for this is to assert them at the
 // same time to get them in sync with each other.
 //
-// voiceX envelope
-// +--------+-------+---------+---------+
-// |  31:24 | 23:16 |    15:8 |     7:0 |
-// +--------+-------+---------+---------+
-// | attack | decay | sustain | release |
-// +--------+-------+---------+---------+
-//
 // Main control
 // +----------+----------+
 // |  31:1    | 0        |
@@ -202,7 +189,6 @@ wire [$clog2(NUM_VOICES)-1:0] voice_idx = wb_adr_i[10:4];
 reg [31:0] voice_osc0_freq[NUM_VOICES-1:0];
 reg [31:0] voice_osc1_freq[NUM_VOICES-1:0];
 reg [31:0] voice_ctrl[NUM_VOICES-1:0];
-reg [31:0] voice_adsr[NUM_VOICES-1:0];
 
 always @(posedge clk) begin
 	if (voice_ce & wb_write_req) begin
@@ -214,7 +200,7 @@ always @(posedge clk) begin
 		2'h2:
 			voice_ctrl[voice_idx] <= wb_dat_i;
 		2'h3:
-			voice_adsr[voice_idx] <= wb_dat_i;
+			;
 		endcase
 	end
 end
@@ -276,12 +262,6 @@ for (i = 0; i < NUM_VOICES; i = i + 1) begin : register_flattening
 	assign nco1_freq[32*(i+1)-1:32*i] = voice_osc1_freq[i];
 
 	assign nco_mixmode[3*(i+1)-1:3*i] = voice_ctrl[i][5:3];
-
-	assign envelope_gate[i] = voice_ctrl[i][NOTE_ON];
-	assign envelope_attack[8*(i+1)-1:8*i] = voice_adsr[i][31:24];
-	assign envelope_decay[8*(i+1)-1:8*i] = voice_adsr[i][23:16];
-	assign envelope_sustain[8*(i+1)-1:8*i] = voice_adsr[i][15:8];
-	assign envelope_release[8*(i+1)-1:8*i] = voice_adsr[i][7:0];
 
 	assign velocity[8*(i+1)-1:8*i] = voice_ctrl[i][15:8];
 end
