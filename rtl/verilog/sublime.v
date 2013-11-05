@@ -92,7 +92,10 @@ endgenerate
 // the current active voice.
 wire active_voice_done = 1'b1;
 
-sublime_voice_ctrl voice_ctrl0 (
+sublime_voice_ctrl #(
+	.NUM_VOICES			(NUM_VOICES),
+	.WAVETABLE_SIZE			(WAVETABLE_SIZE)
+) voice_ctrl0 (
 	.clk				(clk),
 	.rst				(rst),
 
@@ -119,7 +122,9 @@ sublime_voice_ctrl voice_ctrl0 (
 	.wavetable1_write_data		(wavetable_write_data)
 );
 
-sublime_voice_mixer voice_mixer0 (
+sublime_voice_mixer #(
+	.NUM_VOICES			(NUM_VOICES)
+) voice_mixer0 (
 	// Outputs
 	.mixed_data			(mixed_data),
 	// Inputs
@@ -131,7 +136,10 @@ sublime_voice_mixer voice_mixer0 (
 	.active_voice_data		(active_voice_data)
 );
 
-sublime_wb_slave wb_slave0 (
+sublime_wb_slave #(
+	.NUM_VOICES			(NUM_VOICES),
+	.WAVETABLE_SIZE			(WAVETABLE_SIZE)
+) wb_slave0 (
 	.clk				(clk),
 	.rst				(rst),
 
