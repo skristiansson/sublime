@@ -23,9 +23,6 @@ void midi_handle_note_on_off(struct note_onoff *note_onoff, uint8_t note,
 	int i;
 	struct midi_note midi_note;
 
-	printf("SJK DEBUG: midi_handle_note_on_off: %x, %x\r\n",
-	       note_onoff, note_onoff->cb_cnt);
-
 	for (i = 0; i < note_onoff->cb_cnt; i++) {
 		if (note_onoff->cb[i] &&
 		    (note_onoff->listen_chan[i] == 0xff ||
