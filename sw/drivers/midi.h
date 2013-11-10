@@ -13,12 +13,8 @@
 #define REALTIME_MASK		0xf8
 #define NOTE_ON			0x90
 #define NOTE_OFF		0x80
+#define PITCH_WHEEL_CHANGE	0xe0
 #define SYSEX_MSG		0xf0
-
-enum {
-	CB_NOTE_ON,
-	CB_NOTE_OFF
-};
 
 struct midi_msg {
 	size_t len;
@@ -30,18 +26,6 @@ struct midi_note {
 	uint8_t velocity;
 	void *private_data;
 };
-
-/* Helper functions for parsing status byte */
-static inline int is_note_on(uint8_t status_byte)
-{
-	return (status_byte & 0xf0) == NOTE_ON;
-}
-
-static inline int is_note_off(uint8_t status_byte)
-{
-	return (status_byte & 0xf0) == NOTE_OFF;
-
-}
 
 static inline uint8_t get_chan(uint8_t status_byte)
 {

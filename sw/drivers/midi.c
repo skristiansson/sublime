@@ -39,17 +39,29 @@ void midi_handle_msg(struct midi_msg *msg)
 {
 	uint8_t status_byte = msg->data[0];
 
-	if (status_byte == SYSEX_MSG) {
-		; /* TODO */
-	} else if (is_note_off(status_byte) ||
-		   (is_note_on(status_byte) && (msg->data[2] == 0))) {
-		/* Note off */
+	switch (status_byte & 0xf0) {
+	case NOTE_ON:
+		/* Treat note on with 0 velocity as note off */
+		if (msg->data[2] == 0) {
+			msg->data[0] = (status_byte & 0x0f) | NOTE_OFF;
+			midi_handle_msg(msg);
+			break;
+		}
+
+		midi_handle_note_on_off(&note_on, msg->data[1],	msg->data[2],
+					get_chan(status_byte));
+		break;
+
+	case NOTE_OFF:
 		midi_handle_note_on_off(&note_off, msg->data[1], msg->data[2],
 					get_chan(status_byte));
-	} else if (is_note_on(status_byte)) {
-		/* Note on */
-		midi_handle_note_on_off(&note_on, msg->data[1], msg->data[2],
-					get_chan(status_byte));
+		break;
+
+	case PITCH_WHEEL_CHANGE:
+		break;
+
+	default:
+		break;
 	}
 }
 
