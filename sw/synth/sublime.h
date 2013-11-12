@@ -22,7 +22,7 @@
 
 struct osc {
 	int enable;
-	int8_t cents;
+	int32_t cents;
 };
 
 struct voice {
