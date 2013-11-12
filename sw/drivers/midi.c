@@ -21,16 +21,16 @@ void midi_handle_note_on_off(struct note_onoff *note_onoff, uint8_t note,
 			     uint8_t velocity, uint8_t chan)
 {
 	int i;
-	struct midi_note midi_note;
+	struct midi midi;
 
 	for (i = 0; i < note_onoff->cb_cnt; i++) {
 		if (note_onoff->cb[i] &&
 		    (note_onoff->listen_chan[i] == 0xff ||
 		     note_onoff->listen_chan[i] == chan)) {
-			midi_note.note = note;
-			midi_note.velocity = velocity;
-			midi_note.private_data = note_onoff->private_data[i];
-			note_onoff->cb[i](&midi_note);
+			midi.note = note;
+			midi.velocity = velocity;
+			midi.private_data = note_onoff->private_data[i];
+			note_onoff->cb[i](&midi);
 		}
 	}
 }
@@ -101,7 +101,7 @@ void midi_receive_byte(uint8_t data)
 }
 
 int midi_register_note_on_cb(void *private_data, uint8_t listen_chan,
-			     void (*cb)(struct midi_note *midi_note))
+			     void (*cb)(struct midi *midi))
 {
 	if (note_on.cb_cnt >= MAX_CALLBACKS)
 		return -1;
@@ -115,7 +115,7 @@ int midi_register_note_on_cb(void *private_data, uint8_t listen_chan,
 }
 
 int midi_register_note_off_cb(void *private_data, uint8_t listen_chan,
-			      void (*cb)(struct midi_note *midi_note))
+			      void (*cb)(struct midi *midi))
 {
 	if (note_off.cb_cnt >= MAX_CALLBACKS)
 		return -1;

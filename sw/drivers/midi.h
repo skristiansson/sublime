@@ -21,7 +21,7 @@ struct midi_msg {
 	uint8_t data[128];
 };
 
-struct midi_note {
+struct midi {
 	uint8_t note;
 	uint8_t velocity;
 	void *private_data;
@@ -36,8 +36,8 @@ extern void midi_init(void);
 extern void midi_driver_init(void);
 extern void midi_receive_byte(uint8_t data);
 extern int midi_register_note_on_cb(void *private_data, uint8_t listen_chan,
-				    void (*cb)(struct midi_note *midi_note));
+				    void (*cb)(struct midi *midi));
 extern int midi_register_note_off_cb(void *private_data, uint8_t listen_chan,
-				     void (*cb)(struct midi_note *midi_note));
+				     void (*cb)(struct midi *midi));
 
 #endif

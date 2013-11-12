@@ -152,32 +152,32 @@ int sublime_get_voice_by_note(struct sublime *sublime, uint8_t note)
 	return -1;
 }
 
-void sublime_note_on_cb(struct midi_note *midi_note)
+void sublime_note_on_cb(struct midi *midi)
 {
-	struct sublime *sublime = midi_note->private_data;
+	struct sublime *sublime = midi->private_data;
 	int voice;
 
 	voice = sublime_get_free_voice(sublime);
 	if (voice < 0)
 		return;
 
-	sublime->voices[voice].note = midi_note->note;
-	sublime->voices[voice].velocity = midi_note->velocity;
+	sublime->voices[voice].note = midi->note;
+	sublime->voices[voice].velocity = midi->velocity;
 	sublime->voices[voice].active = 1;
 	envelope_gate_on(&sublime->voices[voice].amp_env);
 }
 
-void sublime_note_off_cb(struct midi_note *midi_note)
+void sublime_note_off_cb(struct midi *midi)
 {
-	struct sublime *sublime = midi_note->private_data;
+	struct sublime *sublime = midi->private_data;
 	int voice;
 
-	voice = sublime_get_voice_by_note(sublime, midi_note->note);
+	voice = sublime_get_voice_by_note(sublime, midi->note);
 	if (voice < 0)
 		return;
 
-	if (midi_note->velocity)
-		sublime->voices[voice].velocity = midi_note->velocity;
+	if (midi->velocity)
+		sublime->voices[voice].velocity = midi->velocity;
 	envelope_gate_off(&sublime->voices[voice].amp_env);
 }
 
