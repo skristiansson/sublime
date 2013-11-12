@@ -57,7 +57,7 @@ void midi_handle_msg(struct midi_msg *msg)
 					get_chan(status_byte));
 		break;
 
-	case PITCH_WHEEL_CHANGE:
+	case PITCHWHEEL_CHANGE:
 		break;
 
 	default:

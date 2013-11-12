@@ -13,7 +13,7 @@
 #define REALTIME_MASK		0xf8
 #define NOTE_ON			0x90
 #define NOTE_OFF		0x80
-#define PITCH_WHEEL_CHANGE	0xe0
+#define PITCHWHEEL_CHANGE	0xe0
 #define SYSEX_MSG		0xf0
 
 struct midi_msg {
