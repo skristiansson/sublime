@@ -152,6 +152,9 @@ int sublime_get_voice_by_note(struct sublime *sublime, uint8_t note)
 	return -1;
 }
 
+/*
+ * MIDI callbacks
+ */
 void sublime_note_on_cb(struct midi *midi)
 {
 	struct sublime *sublime = midi->private_data;
@@ -181,6 +184,17 @@ void sublime_note_off_cb(struct midi *midi)
 	envelope_gate_off(&sublime->voices[voice].amp_env);
 }
 
+void sublime_pitchwheel_cb(struct midi *midi)
+{
+	struct sublime *sublime = midi->private_data;
+	int16_t pitch = 200*midi->pitchwheel/8192;
+
+	for (int i = 0; i < sublime->num_voices; i++) {
+		sublime->voices[i].osc[0].cents = pitch;
+		sublime->voices[i].osc[1].cents = pitch;
+	}
+}
+
 void sublime_write_voice(struct sublime *sublime, int voice_idx)
 {
 	uint16_t velocity;
@@ -194,8 +208,10 @@ void sublime_write_voice(struct sublime *sublime, int voice_idx)
 	sublime_write_reg(sublime, VOICE_REG(voice_idx, VOICE_CTRL),
 			  velocity << 8 | voice->osc[1].enable << 1 |
 			  voice->osc[0].enable);
-	sublime_set_note(sublime, voice_idx, 0, voice->note, 0);
-	sublime_set_note(sublime, voice_idx, 1, voice->note, 0);
+	sublime_set_note(sublime, voice_idx, 0, voice->note,
+			 voice->osc[0].cents);
+	sublime_set_note(sublime, voice_idx, 1, voice->note,
+			 voice->osc[1].cents);
 }
 
 void sublime_task(struct sublime *sublime)
@@ -244,6 +260,8 @@ void sublime_init(struct sublime *sublime, void *base)
 	/* Deassert sync to all voices */
 	sublime_write_reg(sublime, MAIN_CTRL, 0);
 
+	/* TODO: register on a specific chan... */
 	midi_register_note_on_cb(sublime, 0xff, sublime_note_on_cb);
 	midi_register_note_off_cb(sublime, 0xff, sublime_note_off_cb);
+	midi_register_pitchwheel_cb(sublime, 0xff, sublime_pitchwheel_cb);
 }

@@ -24,6 +24,7 @@ struct midi_msg {
 struct midi {
 	uint8_t note;
 	uint8_t velocity;
+	int16_t pitchwheel;
 	void *private_data;
 };
 
@@ -39,5 +40,7 @@ extern int midi_register_note_on_cb(void *private_data, uint8_t listen_chan,
 				    void (*cb)(struct midi *midi));
 extern int midi_register_note_off_cb(void *private_data, uint8_t listen_chan,
 				     void (*cb)(struct midi *midi));
+extern int midi_register_pitchwheel_cb(void *private_data, uint8_t listen_chan,
+				       void (*cb)(struct midi *midi));
 
 #endif

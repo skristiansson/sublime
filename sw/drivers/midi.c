@@ -14,8 +14,10 @@ struct midi_cb {
 
 static struct midi_cb note_on;
 static struct midi_cb note_off;
+static struct midi_cb pitchwheel_change;
 static struct midi_msg midi_msg;
 
+/* TODO: combine these */
 static void midi_handle_note_on_off(struct midi_cb *note_onoff, uint8_t note,
 				    uint8_t velocity, uint8_t chan)
 {
@@ -31,6 +33,23 @@ static void midi_handle_note_on_off(struct midi_cb *note_onoff, uint8_t note,
 			midi.private_data = note_onoff->private_data[i];
 			note_onoff->cb[i](&midi);
 		}
+	}
+}
+
+static void midi_handle_pitchwheel(uint8_t pitchwheel_high,
+				   uint8_t pitchwheel_low, uint8_t chan)
+{
+	int i;
+	struct midi_cb *pw = &pitchwheel_change;
+	struct midi midi;
+
+	midi.pitchwheel = ((pitchwheel_high << 7) | pitchwheel_low) - 0x2000;
+	midi.private_data = pw->private_data[i];
+
+	for (i = 0; i < pw->cb_cnt; i++) {
+		if (pw->cb[i] && (pw->listen_chan[i] == 0xff ||
+				  pw->listen_chan[i] == chan))
+			pw->cb[i](&midi);
 	}
 }
 
@@ -57,6 +76,8 @@ void midi_handle_msg(struct midi_msg *msg)
 		break;
 
 	case PITCHWHEEL_CHANGE:
+		midi_handle_pitchwheel(msg->data[2], msg->data[1],
+				       get_chan(status_byte));
 		break;
 
 	default:
@@ -127,6 +148,19 @@ int midi_register_note_off_cb(void *private_data, uint8_t listen_chan,
 	return 0;
 }
 
+int midi_register_pitchwheel_cb(void *private_data, uint8_t listen_chan,
+				void (*cb)(struct midi *midi))
+{
+	if (pitchwheel_change.cb_cnt >= MAX_CALLBACKS)
+		return -1;
+
+	pitchwheel_change.cb[pitchwheel_change.cb_cnt] = cb;
+	pitchwheel_change.private_data[pitchwheel_change.cb_cnt] = private_data;
+	pitchwheel_change.listen_chan[pitchwheel_change.cb_cnt] = listen_chan;
+	pitchwheel_change.cb_cnt++;
+
+	return 0;
+}
 void midi_init(void)
 {
 	midi_driver_init();
