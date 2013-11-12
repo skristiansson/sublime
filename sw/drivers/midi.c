@@ -5,20 +5,19 @@
 #define MAX_CALLBACKS	10
 
 
-struct note_onoff {
-	void (*cb[MAX_CALLBACKS])(struct midi_note *midi_note);
+struct midi_cb {
+	void (*cb[MAX_CALLBACKS])(struct midi *midi);
 	uint8_t listen_chan[MAX_CALLBACKS];
 	void *private_data[MAX_CALLBACKS];
 	int cb_cnt;
 };
 
-static struct note_onoff note_on;
-static struct note_onoff note_off;
-
+static struct midi_cb note_on;
+static struct midi_cb note_off;
 static struct midi_msg midi_msg;
 
-void midi_handle_note_on_off(struct note_onoff *note_onoff, uint8_t note,
-			     uint8_t velocity, uint8_t chan)
+static void midi_handle_note_on_off(struct midi_cb *note_onoff, uint8_t note,
+				    uint8_t velocity, uint8_t chan)
 {
 	int i;
 	struct midi midi;
