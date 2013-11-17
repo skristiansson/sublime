@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdint.h>
 #include <config.h>
 #include <spr-defs.h>

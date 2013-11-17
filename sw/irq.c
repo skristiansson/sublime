@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <irq.h>
 
 extern void or1k_interrupt_handler(void);
