@@ -19,6 +19,19 @@ uint32_t sublime_read_reg(struct sublime *sublime, uint32_t reg)
 	return *((uint32_t *)(sublime->base + reg));
 }
 
+/* Translate 0-127 to 1ms-16s (127-255 = 16s) */
+static uint32_t to_us(uint32_t value)
+{
+	if (value <= 10)
+		return 1000*(value);
+	else if (value <= 100)
+		return 10000*(value-10);
+	else if (value < 127)
+		return 100000*(value-100)*5;
+	else
+		return 16e6;
+}
+
 static void gen_triangle(int32_t *dest)
 {
 	int32_t i;

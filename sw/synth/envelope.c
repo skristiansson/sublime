@@ -16,20 +16,6 @@ enum {
 	ENVELOPE_RELEASE,
 };
 
-/* Translate 0-127 to 1ms-16s (127-255 = 16s) */
-/* SJK MOVE THIS */
-static uint32_t to_us(uint32_t value)
-{
-	if (value <= 10)
-		return 1000*(value);
-	else if (value <= 100)
-		return 10000*(value-10);
-	else if (value < 127)
-		return 100000*(value-100)*5;
-	else
-		return 16e6;
-}
-
 /* Helper function to limit interrupt rate to 10kHz */
 static uint8_t get_step(uint32_t wait_us)
 {
