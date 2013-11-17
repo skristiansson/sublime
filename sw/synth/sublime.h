@@ -22,7 +22,8 @@
 
 struct osc {
 	int enable;
-	int32_t cents;
+	int8_t detune_notes;
+	int8_t detune_cents;
 };
 
 struct voice {
@@ -36,6 +37,7 @@ struct voice {
 struct sublime {
 	void *base;
 	int num_voices;
+	int16_t pitchwheel;
 	int32_t *wavetable0;
 	int32_t *wavetable1;
 	struct voice voices[MAX_NUM_VOICES];

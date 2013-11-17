@@ -5,57 +5,38 @@
 #define MAX_CALLBACKS	10
 
 
-struct midi_cb {
+struct midi_event {
 	void (*cb[MAX_CALLBACKS])(struct midi *midi);
 	uint8_t listen_chan[MAX_CALLBACKS];
 	void *private_data[MAX_CALLBACKS];
 	int cb_cnt;
 };
 
-static struct midi_cb note_on;
-static struct midi_cb note_off;
-static struct midi_cb pitchwheel_change;
+static struct midi_event midi_events[MIDI_EVENT_MAX];
 static struct midi_msg midi_msg;
 
-/* TODO: combine these */
-static void midi_handle_note_on_off(struct midi_cb *note_onoff, uint8_t note,
-				    uint8_t velocity, uint8_t chan)
+static void midi_handle_event(struct midi_event *event, struct midi *midi)
 {
 	int i;
-	struct midi midi;
 
-	for (i = 0; i < note_onoff->cb_cnt; i++) {
-		if (note_onoff->cb[i] &&
-		    (note_onoff->listen_chan[i] == 0xff ||
-		     note_onoff->listen_chan[i] == chan)) {
-			midi.note = note;
-			midi.velocity = velocity;
-			midi.private_data = note_onoff->private_data[i];
-			note_onoff->cb[i](&midi);
+	for (i = 0; i < event->cb_cnt; i++) {
+		if (event->cb[i] && (event->listen_chan[i] == 0xff ||
+				     event->listen_chan[i] == midi->chan)) {
+			midi->private_data = event->private_data[i];
+			event->cb[i](midi);
 		}
 	}
 }
 
-static void midi_handle_pitchwheel(uint8_t pitchwheel_high,
-				   uint8_t pitchwheel_low, uint8_t chan)
-{
-	int i;
-	struct midi_cb *pw = &pitchwheel_change;
-	struct midi midi;
-
-	midi.pitchwheel = ((pitchwheel_high << 7) | pitchwheel_low) - 0x2000;
-	midi.private_data = pw->private_data[i];
-
-	for (i = 0; i < pw->cb_cnt; i++) {
-		if (pw->cb[i] && (pw->listen_chan[i] == 0xff ||
-				  pw->listen_chan[i] == chan))
-			pw->cb[i](&midi);
-	}
-}
-
+/*
+ * Parse the midi msg type
+ */
 void midi_handle_msg(struct midi_msg *msg)
 {
+	struct midi midi;
 	uint8_t status_byte = msg->data[0];
+
+	midi.chan = get_chan(status_byte);
 
 	switch (status_byte & 0xf0) {
 	case NOTE_ON:
@@ -66,18 +47,26 @@ void midi_handle_msg(struct midi_msg *msg)
 			break;
 		}
 
-		midi_handle_note_on_off(&note_on, msg->data[1],	msg->data[2],
-					get_chan(status_byte));
+		midi.note.key = msg->data[1];
+		midi.note.velocity = msg->data[2];
+		midi_handle_event(&midi_events[MIDI_EVENT_NOTE_ON], &midi);
 		break;
 
 	case NOTE_OFF:
-		midi_handle_note_on_off(&note_off, msg->data[1], msg->data[2],
-					get_chan(status_byte));
+		midi.note.key = msg->data[1];
+		midi.note.velocity = msg->data[2];
+		midi_handle_event(&midi_events[MIDI_EVENT_NOTE_OFF], &midi);
 		break;
 
 	case PITCHWHEEL_CHANGE:
-		midi_handle_pitchwheel(msg->data[2], msg->data[1],
-				       get_chan(status_byte));
+		/*
+		 * pitchwheel change data is a 14 bit unsigned value with 0x2000
+		 * representing 0
+		 */
+		midi.pitchwheel = ((msg->data[2] << 7) | msg->data[1]) - 0x2000;
+		midi_handle_event(&midi_events[MIDI_EVENT_PW_CHANGE], &midi);
+		break;
+
 		break;
 
 	default:
@@ -120,47 +109,30 @@ void midi_receive_byte(uint8_t data)
 	}
 }
 
-int midi_register_note_on_cb(void *private_data, uint8_t listen_chan,
-			     void (*cb)(struct midi *midi))
+/*
+ * Register a callback for a midi event.
+ * Returns 0 on success.
+ */
+int midi_register_cb(int event_type, void *private_data, uint8_t listen_chan,
+		     void (*cb)(struct midi *midi))
 {
-	if (note_on.cb_cnt >= MAX_CALLBACKS)
+	struct midi_event *event;
+
+	if (event_type > MIDI_EVENT_MAX || event_type < 0)
 		return -1;
 
-	note_on.cb[note_on.cb_cnt] = cb;
-	note_on.private_data[note_on.cb_cnt] = private_data;
-	note_on.listen_chan[note_on.cb_cnt] = listen_chan;
-	note_on.cb_cnt++;
+	event = &midi_events[event_type];
+	if (event->cb_cnt >= MAX_CALLBACKS)
+		return -2;
+
+	event->cb[event->cb_cnt] = cb;
+	event->private_data[event->cb_cnt] = private_data;
+	event->listen_chan[event->cb_cnt] = listen_chan;
+	event->cb_cnt++;
 
 	return 0;
 }
 
-int midi_register_note_off_cb(void *private_data, uint8_t listen_chan,
-			      void (*cb)(struct midi *midi))
-{
-	if (note_off.cb_cnt >= MAX_CALLBACKS)
-		return -1;
-
-	note_off.cb[note_off.cb_cnt] = cb;
-	note_off.private_data[note_off.cb_cnt] = private_data;
-	note_off.listen_chan[note_off.cb_cnt] = listen_chan;
-	note_off.cb_cnt++;
-
-	return 0;
-}
-
-int midi_register_pitchwheel_cb(void *private_data, uint8_t listen_chan,
-				void (*cb)(struct midi *midi))
-{
-	if (pitchwheel_change.cb_cnt >= MAX_CALLBACKS)
-		return -1;
-
-	pitchwheel_change.cb[pitchwheel_change.cb_cnt] = cb;
-	pitchwheel_change.private_data[pitchwheel_change.cb_cnt] = private_data;
-	pitchwheel_change.listen_chan[pitchwheel_change.cb_cnt] = listen_chan;
-	pitchwheel_change.cb_cnt++;
-
-	return 0;
-}
 void midi_init(void)
 {
 	midi_driver_init();

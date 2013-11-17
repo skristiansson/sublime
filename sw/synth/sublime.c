@@ -177,8 +177,8 @@ void sublime_note_on_cb(struct midi *midi)
 	if (voice < 0)
 		return;
 
-	sublime->voices[voice].note = midi->note;
-	sublime->voices[voice].velocity = midi->velocity;
+	sublime->voices[voice].note = midi->note.key;
+	sublime->voices[voice].velocity = midi->note.velocity;
 	sublime->voices[voice].active = 1;
 	envelope_gate_on(&sublime->voices[voice].amp_env);
 }
@@ -188,30 +188,27 @@ void sublime_note_off_cb(struct midi *midi)
 	struct sublime *sublime = midi->private_data;
 	int voice;
 
-	voice = sublime_get_voice_by_note(sublime, midi->note);
+	voice = sublime_get_voice_by_note(sublime, midi->note.key);
 	if (voice < 0)
 		return;
 
-	if (midi->velocity)
-		sublime->voices[voice].velocity = midi->velocity;
+	if (midi->note.velocity)
+		sublime->voices[voice].velocity = midi->note.velocity;
 	envelope_gate_off(&sublime->voices[voice].amp_env);
 }
 
 void sublime_pitchwheel_cb(struct midi *midi)
 {
 	struct sublime *sublime = midi->private_data;
-	int16_t pitch = 200*midi->pitchwheel/8192;
 
-	for (int i = 0; i < sublime->num_voices; i++) {
-		sublime->voices[i].osc[0].cents = pitch;
-		sublime->voices[i].osc[1].cents = pitch;
-	}
+	sublime->pitchwheel = 200*midi->pitchwheel/8192;
 }
 
 void sublime_write_voice(struct sublime *sublime, int voice_idx)
 {
 	uint16_t velocity;
 	struct voice *voice = &sublime->voices[voice_idx];
+	int32_t cents;
 
 	if (!envelope_isactive(&voice->amp_env))
 		voice->active = 0;
@@ -221,10 +218,14 @@ void sublime_write_voice(struct sublime *sublime, int voice_idx)
 	sublime_write_reg(sublime, VOICE_REG(voice_idx, VOICE_CTRL),
 			  velocity << 8 | voice->osc[1].enable << 1 |
 			  voice->osc[0].enable);
-	sublime_set_note(sublime, voice_idx, 0, voice->note,
-			 voice->osc[0].cents);
-	sublime_set_note(sublime, voice_idx, 1, voice->note,
-			 voice->osc[1].cents);
+
+	cents = sublime->pitchwheel + voice->osc[0].detune_notes*100 +
+		voice->osc[0].detune_cents;
+	sublime_set_note(sublime, voice_idx, 0, voice->note, cents);
+
+	cents = sublime->pitchwheel + voice->osc[1].detune_notes*100 +
+		voice->osc[1].detune_cents;
+	sublime_set_note(sublime, voice_idx, 1, voice->note, cents);
 }
 
 void sublime_task(struct sublime *sublime)

@@ -16,15 +16,29 @@
 #define PITCHWHEEL_CHANGE	0xe0
 #define SYSEX_MSG		0xf0
 
+enum {
+	MIDI_EVENT_NOTE_ON,
+	MIDI_EVENT_NOTE_OFF,
+	MIDI_EVENT_PW_CHANGE,
+	MIDI_EVENT_MAX
+};
+
 struct midi_msg {
 	size_t len;
 	uint8_t data[128];
 };
 
-struct midi {
-	uint8_t note;
+struct midi_note {
+	uint8_t key;
 	uint8_t velocity;
-	int16_t pitchwheel;
+};
+
+struct midi {
+	uint8_t chan;
+	union {
+		struct midi_note note;
+		int16_t pitchwheel;
+	};
 	void *private_data;
 };
 
@@ -36,11 +50,7 @@ static inline uint8_t get_chan(uint8_t status_byte)
 extern void midi_init(void);
 extern void midi_driver_init(void);
 extern void midi_receive_byte(uint8_t data);
-extern int midi_register_note_on_cb(void *private_data, uint8_t listen_chan,
-				    void (*cb)(struct midi *midi));
-extern int midi_register_note_off_cb(void *private_data, uint8_t listen_chan,
-				     void (*cb)(struct midi *midi));
-extern int midi_register_pitchwheel_cb(void *private_data, uint8_t listen_chan,
-				       void (*cb)(struct midi *midi));
+extern int midi_register_cb(int event_type, void *private_data,
+			    uint8_t listen_chan, void (*cb)(struct midi *midi));
 
 #endif
