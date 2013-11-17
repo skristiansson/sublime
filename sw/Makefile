@@ -5,7 +5,7 @@ OBJCOPY = or1k-elf-objcopy
 OBJDUMP = or1k-elf-objdump
 REMOVE = rm -rf
 # Compiler flags
-CFLAGS = -c -Wall -std=c99 -O2 -I./ -Idrivers/ -Isynth/
+CFLAGS = -c -Wall -Wno-unused-function -std=c99 -O2 -I./ -Idrivers/ -Isynth/
 # Linker flags
 LDFLAGS = -mnewlib -lm
 
