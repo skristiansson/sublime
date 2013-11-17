@@ -34,7 +34,7 @@ static void init(void)
 	printf("done\r\n");
 
 	printf("Initializing sublime..");
-	sublime_init(&sublime_synth, BOARD_SUBLIME_BASE);
+	sublime_init(&sublime_synth, (void *)BOARD_SUBLIME_BASE);
 	printf("done\r\n");
 
 	irq_enable();
