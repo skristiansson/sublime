@@ -204,6 +204,65 @@ void sublime_pitchwheel_cb(struct midi *midi)
 	sublime->pitchwheel = 200*midi->pitchwheel/8192;
 }
 
+void sublime_control_change_cb(struct midi *midi)
+{
+	int i;
+	struct sublime *sublime = midi->private_data;
+	uint8_t value = midi->cc.value;
+
+	printf("SJK DEBUG: control change: controller = %x, value = %x\r\n",
+	       midi->cc.controller, midi->cc.value);
+
+	switch (midi->cc.controller) {
+	case CC_OSC0_DETUNE_NOTES:
+		for (i = 0; i < sublime->num_voices; i++)
+			sublime->voices[i].osc[0].detune_notes = value - 64;
+		break;
+
+	case CC_OSC0_DETUNE_CENTS:
+		for (i = 0; i < sublime->num_voices; i++)
+			sublime->voices[i].osc[0].detune_cents = value - 64;
+		break;
+
+	case CC_OSC1_DETUNE_NOTES:
+		for (i = 0; i < sublime->num_voices; i++)
+			sublime->voices[i].osc[1].detune_notes = value - 64;
+		break;
+
+	case CC_OSC1_DETUNE_CENTS:
+		for (i = 0; i < sublime->num_voices; i++)
+			sublime->voices[i].osc[1].detune_cents = value - 64;
+		break;
+
+	case CC_OSC_MIXMODE:
+		for (i = 0; i < sublime->num_voices; i++)
+			sublime->voices[i].osc_mixmode = value;
+		break;
+
+	case CC_AMP_ATTACK:
+		for (i = 0; i < sublime->num_voices; i++)
+			sublime->voices[i].amp_env.attack = to_us(value);
+		break;
+
+	case CC_AMP_DECAY:
+		for (i = 0; i < sublime->num_voices; i++)
+			sublime->voices[i].amp_env.decay = to_us(value);;
+		break;
+
+	case CC_AMP_SUSTAIN:
+		for (i = 0; i < sublime->num_voices; i++)
+			sublime->voices[i].amp_env.sustain = value * 2;
+		break;
+
+	case CC_AMP_RELEASE:
+		for (i = 0; i < sublime->num_voices; i++)
+			sublime->voices[i].amp_env.release = to_us(value);;
+
+	default:
+		break;
+	}
+}
+
 void sublime_write_voice(struct sublime *sublime, int voice_idx)
 {
 	uint16_t velocity;
@@ -255,7 +314,7 @@ void sublime_init(struct sublime *sublime, void *base)
 		sublime->voices[i].amp_env.attack = 50000;
 		sublime->voices[i].amp_env.decay = 100000;
 		sublime->voices[i].amp_env.sustain = 0x7f;
-		sublime->voices[i].amp_env.release = 1000000;
+		sublime->voices[i].amp_env.release = 100000;
 	}
 
 	/* Reset all voice registers */
@@ -275,7 +334,12 @@ void sublime_init(struct sublime *sublime, void *base)
 	sublime_write_reg(sublime, MAIN_CTRL, 0);
 
 	/* TODO: register on a specific chan... */
-	midi_register_note_on_cb(sublime, 0xff, sublime_note_on_cb);
-	midi_register_note_off_cb(sublime, 0xff, sublime_note_off_cb);
-	midi_register_pitchwheel_cb(sublime, 0xff, sublime_pitchwheel_cb);
+	midi_register_cb(MIDI_EVENT_NOTE_ON, sublime, 0xff,
+			 sublime_note_on_cb);
+	midi_register_cb(MIDI_EVENT_NOTE_OFF, sublime, 0xff,
+			 sublime_note_off_cb);
+	midi_register_cb(MIDI_EVENT_PW_CHANGE, sublime, 0xff,
+			 sublime_pitchwheel_cb);
+	midi_register_cb(MIDI_EVENT_CC, sublime, 0xff,
+			 sublime_control_change_cb);
 }

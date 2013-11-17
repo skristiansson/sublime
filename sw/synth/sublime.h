@@ -20,6 +20,19 @@
 #define WAVETABLE0		0x10000
 #define WAVETABLE1		0x20000
 
+/* MIDI Control Change defines */
+#define CC_OSC0_DETUNE_NOTES	3
+#define CC_OSC0_DETUNE_CENTS	9
+#define CC_OSC1_DETUNE_NOTES	14
+#define CC_OSC1_DETUNE_CENTS	15
+
+#define CC_OSC_MIXMODE		18
+
+#define CC_AMP_ATTACK		73
+#define CC_AMP_DECAY		75
+#define CC_AMP_SUSTAIN		79
+#define CC_AMP_RELEASE		72
+
 struct osc {
 	int enable;
 	int8_t detune_notes;
@@ -31,6 +44,7 @@ struct voice {
 	uint8_t velocity;
 	uint8_t note;
 	struct envelope amp_env;
+	uint8_t osc_mixmode;
 	struct osc osc[2];
 };
 

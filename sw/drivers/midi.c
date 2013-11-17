@@ -67,6 +67,10 @@ void midi_handle_msg(struct midi_msg *msg)
 		midi_handle_event(&midi_events[MIDI_EVENT_PW_CHANGE], &midi);
 		break;
 
+	case CONTROL_CHANGE:
+		midi.cc.controller = msg->data[1];
+		midi.cc.value = msg->data[2];
+		midi_handle_event(&midi_events[MIDI_EVENT_CC], &midi);
 		break;
 
 	default:
