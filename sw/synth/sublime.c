@@ -210,9 +210,6 @@ void sublime_control_change_cb(struct midi *midi)
 	struct sublime *sublime = midi->private_data;
 	uint8_t value = midi->cc.value;
 
-	printf("SJK DEBUG: control change: controller = %x, value = %x\r\n",
-	       midi->cc.controller, midi->cc.value);
-
 	switch (midi->cc.controller) {
 	case CC_OSC0_DETUNE_NOTES:
 		for (i = 0; i < sublime->num_voices; i++)
