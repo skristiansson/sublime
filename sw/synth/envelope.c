@@ -2,7 +2,7 @@
  * Each envelope stage (except sustain) set up a timer that trigger an interrupt
  * when it is time to increase/decrease the output.
  * The increase/decrease steps are limited so that the time between interrupts
- * is always greater or equal to 100 us (10 kHz).
+ * is always greater or equal to 1 ms (1 kHz).
  */
 #include <stdint.h>
 #include <timer.h>
@@ -16,13 +16,20 @@ enum {
 	ENVELOPE_RELEASE,
 };
 
-/* Helper function to limit interrupt rate to 10kHz */
+/* Helper function to limit interrupt rate to 1kHz */
 static uint8_t get_step(uint32_t wait_us)
 {
-	if (wait_us >= 100)
+	uint32_t step;
+
+	if (wait_us >= 1000)
 		return 1;
 
-	return 100/wait_us;
+	if (wait_us == 0)
+		return 0xff;
+
+	step = 1000/wait_us;
+
+	return step > 0xff ? 0xff : step;
 }
 
 static int do_release(struct envelope *envelope)
