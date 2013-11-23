@@ -53,6 +53,9 @@ static int do_release(struct envelope *envelope)
 	else
 		envelope->output -= envelope->step;
 
+	if (wait_us == 0)
+		return ENVELOPE_IDLE;
+
 	timer_start(envelope->timer, TMR_ONESHOT, wait_us);
 
 	return ENVELOPE_RELEASE;
@@ -77,6 +80,9 @@ static int do_decay(struct envelope *envelope)
 		envelope->output = envelope->sustain;
 	else
 		envelope->output -= envelope->step;
+
+	if (wait_us == 0)
+		return ENVELOPE_SUSTAIN;
 
 	timer_start(envelope->timer, TMR_ONESHOT, wait_us);
 
@@ -103,6 +109,9 @@ static int do_attack(struct envelope *envelope)
 		envelope->output = 0xff;
 	else
 		envelope->output += envelope->step;
+
+	if (wait_us == 0)
+		return do_decay(envelope);
 
 	timer_start(envelope->timer, TMR_ONESHOT, wait_us);
 
@@ -140,13 +149,8 @@ int envelope_isactive(struct envelope *envelope)
 
 void envelope_gate_on(struct envelope *envelope)
 {
-	uint32_t wait_us;
-
 	envelope->gate = 1;
-	envelope->state = ENVELOPE_ATTACK;
-	envelope->output = 0;
-	wait_us = envelope->attack/256;
-	timer_start(envelope->timer, TMR_ONESHOT, wait_us*get_step(wait_us));
+	envelope->state = do_attack(envelope);
 }
 
 void envelope_gate_off(struct envelope *envelope)
