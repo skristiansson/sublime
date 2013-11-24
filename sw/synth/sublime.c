@@ -265,15 +265,17 @@ void sublime_write_voice(struct sublime *sublime, int voice_idx)
 	uint16_t velocity;
 	struct voice *voice = &sublime->voices[voice_idx];
 	int32_t cents;
+	uint32_t ctrl = 0;
 
 	if (!envelope_isactive(&voice->amp_env))
 		voice->active = 0;
 
 	velocity = (voice->velocity * voice->amp_env.output)/256;
 
-	sublime_write_reg(sublime, VOICE_REG(voice_idx, VOICE_CTRL),
-			  velocity << 8 | voice->osc[1].enable << 1 |
-			  voice->osc[0].enable);
+	ctrl |= velocity << 8;
+	ctrl |= (voice->osc_mixmode & 0x7) << 3;
+	ctrl |= (voice->osc[1].enable << 1) | voice->osc[0].enable;
+	sublime_write_reg(sublime, VOICE_REG(voice_idx, VOICE_CTRL), ctrl);
 
 	cents = sublime->pitchwheel + voice->osc[0].detune_notes*100 +
 		voice->osc[0].detune_cents;
