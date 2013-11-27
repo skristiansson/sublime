@@ -157,6 +157,26 @@ void sublime_set_note(struct sublime *sublime, int voice, int osc,
 	sublime_write_reg(sublime, VOICE_REG(voice, osc), freq_val);
 }
 
+void sublime_set_waveform(uint8_t waveform, int32_t *dest)
+{
+	switch (waveform) {
+	case 0:
+		break;
+	case 1:
+		gen_saw(dest);
+		break;
+	case 2:
+		gen_square(dest);
+		break;
+	case 3:
+		gen_triangle(dest);
+		break;
+	case 4:
+		gen_sine(dest);
+		break;
+	}
+}
+
 int sublime_get_free_voice(struct sublime *sublime)
 {
 	for (int i = 0; i < sublime->num_voices; i++) {
@@ -234,6 +254,10 @@ void sublime_control_change_cb(struct midi *midi)
 			sublime->voices[i].osc[0].detune_cents = value - 64;
 		break;
 
+	case CC_OSC0_WAVEFORM:
+		sublime_set_waveform(value, sublime->wavetable0);
+		break;
+
 	case CC_OSC1_DETUNE_NOTES:
 		for (i = 0; i < sublime->num_voices; i++)
 			sublime->voices[i].osc[1].detune_notes = value - 64;
@@ -242,6 +266,10 @@ void sublime_control_change_cb(struct midi *midi)
 	case CC_OSC1_DETUNE_CENTS:
 		for (i = 0; i < sublime->num_voices; i++)
 			sublime->voices[i].osc[1].detune_cents = value - 64;
+		break;
+
+	case CC_OSC1_WAVEFORM:
+		sublime_set_waveform(value, sublime->wavetable1);
 		break;
 
 	case CC_OSC_MIXMODE:

@@ -23,8 +23,10 @@
 /* MIDI Control Change defines */
 #define CC_OSC0_DETUNE_NOTES	3
 #define CC_OSC0_DETUNE_CENTS	9
+#define CC_OSC0_WAVEFORM	16
 #define CC_OSC1_DETUNE_NOTES	14
 #define CC_OSC1_DETUNE_CENTS	15
+#define CC_OSC1_WAVEFORM	17
 
 #define CC_OSC_MIXMODE		18
 
