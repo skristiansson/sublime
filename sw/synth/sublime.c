@@ -6,6 +6,8 @@
 #include <midi.h>
 #include <sublime.h>
 
+#define PI 3.14159265
+
 static uint32_t note_table[129];
 static uint32_t cent_table[101];
 
@@ -67,6 +69,17 @@ static void gen_square(int32_t *dest)
 
 	for (i = 0; i < WAVETABLE_SIZE/2; i++)
 		*dest++ = -(INT_MAX/4);
+}
+
+static void gen_sine(int32_t *dest)
+{
+	int32_t i;
+	double wave;
+
+	for (i = 0; i < WAVETABLE_SIZE; i++) {
+		wave = sin((((double)i)*360/WAVETABLE_SIZE)*PI/180);
+		*dest++ = wave*(INT_MAX/4);
+	}
 }
 
 static void gen_note_table(void)
